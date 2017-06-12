@@ -7,6 +7,9 @@ import numpy as np
 
 from util.activation_functions import Activation
 from model.classifier import Classifier
+from report.evaluator import Evaluator
+from util.activation_functions import *
+from util.loss_functions import *
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s',
                     level=logging.DEBUG,
@@ -56,7 +59,20 @@ class LogisticRegression(Classifier):
             Print logging messages with validation accuracy if verbose is True.
         """
 
-        pass
+        for i in range(self.epochs):
+            grad = 0
+            for x, t in zip(self.trainingSet.input, self.trainingSet.label):
+                o = self.fire(x)
+                grad += (t - o) * x
+            self.updateWeights(grad)
+
+            if verbose:
+                logging.info("Epoch: %i", i+1)
+                evaluator = Evaluator()
+                evaluator.printAccuracy(self.validationSet, self.evaluate(self.validationSet))
+
+
+            
         
     def classify(self, testInstance):
         """Classify a single instance.
@@ -70,7 +86,7 @@ class LogisticRegression(Classifier):
         bool :
             True if the testInstance is recognized as a 7, False otherwise.
         """
-        pass
+        return self.fire(testInstance) > 0.5
 
     def evaluate(self, test=None):
         """Evaluate a whole dataset.
@@ -92,7 +108,7 @@ class LogisticRegression(Classifier):
         return list(map(self.classify, test))
 
     def updateWeights(self, grad):
-        pass
+        self.weight += self.learningRate * grad
 
     def fire(self, input):
         # Look at how we change the activation function here!!!!
